@@ -1,13 +1,19 @@
 FROM rust:1.85 AS builder
 
 WORKDIR /usr/src/heartbeat-rs
-COPY . .
 
-RUN cargo install --path .
+# Cache dependencies
+COPY Cargo.toml Cargo.lock ./
+RUN mkdir src && echo 'fn main() { println!("placeholder"); }' > src/main.rs
+RUN cargo build --release && rm -r src
+
+# Copy actual source and build
+COPY . .
+RUN cargo build --release
 
 
 FROM alpine:latest
 
-COPY --from=builder /usr/src/heartbeat-rs/target/release/heartbeat-rs heartbeat-rs
+COPY --from=builder /usr/src/heartbeat-rs/target/release/heartbeat-rs /usr/local/bin/heartbeat-rs
 
 CMD ["heartbeat-rs"]

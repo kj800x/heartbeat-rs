@@ -14,6 +14,9 @@ RUN cargo build --release
 
 FROM alpine:latest
 
+# Install libgcc for unwinding support (used by Rust binaries with panic=unwind)
+RUN apk add --no-cache libgcc
+
 COPY --from=builder /usr/src/heartbeat-rs/target/release/heartbeat-rs /usr/local/bin/heartbeat-rs
 
 CMD ["heartbeat-rs"]
